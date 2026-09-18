@@ -1,0 +1,120 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>WebChat-Assistant Studio</title>
+    <link rel="stylesheet" href="styles.css">
+</head>
+<body>
+    <header>
+        <div class="brand">
+            <h1>⚡ WebChat-Assistant Studio <span class="badge badge-blue">v1.0.0</span></h1>
+            <span id="master-badge" class="badge badge-red">Master: OFF</span>
+            <span id="worker-badge" class="badge badge-green">Worker: 9222 LIVE</span>
+            <span class="badge badge-blue">🔌 MCP: STDIO JSON-RPC</span>
+        </div>
+        <div class="header-actions">
+            <button class="btn" onclick="openMasterModal()">🔑 母版认证</button>
+            <button class="btn" onclick="syncCookies()">🔄 热同步凭据</button>
+            <button class="btn btn-primary" onclick="openDispatchModal()">🚀 派发任务</button>
+        </div>
+    </header>
+
+    <main>
+        <!-- KPI Row -->
+        <div class="kpi-row">
+            <div class="card">
+                <div class="card-title">
+                    <span>后台在途任务负载</span>
+                    <span class="badge badge-green">双轨流控</span>
+                </div>
+                <div class="odometer-val" id="active-tasks">0</div>
+                <div class="card-desc">ChatGPT Work (上限 2) + Chat (上限 4) 实时执行槽位</div>
+            </div>
+            <div class="card">
+                <div class="card-title">
+                    <span>历史累计完成任务</span>
+                    <span class="badge badge-blue">7章节研报</span>
+                </div>
+                <div class="odometer-val" id="completed-tasks">0</div>
+                <div class="card-desc">全部落盘归档至 PassSearchHistory</div>
+            </div>
+            <div class="card">
+                <div class="card-title">
+                    <span>吞吐 Token 估算</span>
+                    <span class="badge badge-blue">o200k_base</span>
+                </div>
+                <div class="odometer-val" id="total-tokens">0</div>
+                <div class="card-desc">离线拟合分词 + o1/o3 隐式深度思考反推总和</div>
+            </div>
+        </div>
+
+        <!-- Task Table Section -->
+        <div>
+            <div class="section-title">
+                <span>📋 实时任务队列与执行流水线</span>
+            </div>
+            <div class="table-container">
+                <table>
+                    <thead>
+                        <tr>
+                            <th>任务 ID</th>
+                            <th>标题 / 提示词摘要</th>
+                            <th>表面模式</th>
+                            <th>阶段状态</th>
+                            <th>预估耗时</th>
+                            <th>Token</th>
+                            <th>操作</th>
+                        </tr>
+                    </thead>
+                    <tbody id="task-table-body">
+                        <tr>
+                            <td colspan="7" style="text-align:center; color: var(--text-muted);">正在连接 SSE 实时通道...</td>
+                        </tr>
+                    </tbody>
+                </table>
+            </div>
+        </div>
+    </main>
+
+    <!-- SlideOver Drawer -->
+    <div id="drawer" class="drawer">
+        <div class="drawer-header">
+            <div>
+                <h3 id="drawer-title" style="font-size: 1.05rem; font-weight:700;">研报正文</h3>
+                <span id="drawer-subtitle" style="font-size: 0.78rem; color: var(--text-muted);">Task ID</span>
+            </div>
+            <div style="display: flex; gap: 8px;">
+                <button id="drawer-vscode-btn" class="btn" style="padding: 4px 10px; font-size: 0.78rem;">💻 在 VS Code 中打开</button>
+                <button class="btn" onclick="closeDrawer()" style="padding: 4px 10px;">✕ 关闭</button>
+            </div>
+        </div>
+        <div id="drawer-body" class="drawer-body"></div>
+    </div>
+
+    <!-- Dispatch Modal -->
+    <div id="dispatch-modal" class="modal-backdrop">
+        <div class="modal">
+            <h3 style="margin-bottom: 14px;">🚀 派发新深度思考任务</h3>
+            <textarea id="dispatch-prompt" style="width: 100%; height: 120px; background: #0d1117; border: 1px solid var(--border); border-radius: 6px; color: #fff; padding: 10px; margin-bottom: 12px; font-family: inherit; font-size: 0.9rem;" placeholder="输入需要 ChatGPT Pro 深度推理或联网搜索的问题..."></textarea>
+            <div style="display: flex; gap: 12px; margin-bottom: 16px;">
+                <label style="font-size: 0.85rem; color: var(--text-muted);">
+                    模式:
+                    <select id="dispatch-surface" style="background: #21262d; color: #fff; border: 1px solid var(--border); border-radius: 4px; padding: 4px;">
+                        <option value="work">Work (画布/深度思考)</option>
+                        <option value="chat">Chat (标准问答)</option>
+                    </select>
+                </label>
+            </div>
+            <div style="display: flex; justify-content: flex-end; gap: 10px;">
+                <button class="btn" onclick="closeDispatchModal()">取消</button>
+                <button class="btn btn-primary" onclick="submitDispatch()">确认派遣</button>
+            </div>
+        </div>
+    </div>
+
+    <script src="odometer.js"></script>
+    <script src="app.js"></script>
+</body>
+</html>

@@ -1,0 +1,139 @@
+#!/usr/bin/env node
+import { existsSync, mkdirSync, readFileSync, writeFileSync } from "node:fs";
+import { dirname, resolve } from "node:path";
+import { fileURLToPath } from "node:url";
+import { ensureProjectState } from "../src/project-state.mjs";
+import { sessionRegistryPath } from "../src/chatgpt-sessions.mjs";
+import { writeJsonAtomic } from "../src/atomic-json.mjs";
+import { withProjectStateLockSync } from "../src/project-state-lock.mjs";
+
+const binPath = fileURLToPath(import.meta.url);
+const packageRoot = resolve(dirname(binPath), "..");
+
+function arg(name) {
+  const prefix = `--${name}=`;
+  const hit = process.argv.find((value) => value.startsWith(prefix));
+  return hit ? hit.slice(prefix.length) : null;
+}
+
+function flag(name) {
+  return process.argv.includes(`--${name}`);
+}
+
+function usage() {
+  return [
+    "Usage: chatgpt-pro <command> [options]",
+    "",
+    "Commands:",
+    "  init                 Create repo-local state and install the skill",
+    "  doctor               Warm or verify the dedicated ChatGPT browser line",
+    "  status               Show repo room, lock, and cache status without CDP",
+    "  call                 Send a blocking ChatGPT Pro message",
+    "  read                 Read the current ChatGPT Pro response",
+    "  rooms <command>      Repo room lifecycle commands",
+    "  context bundle       Build repo context monofile and manifest",
+    "  history export       Export visible ChatGPT conversation history",
+    "  history read         Read a compiled ChatGPT history artifact",
+    "  transcript verify    Verify transcript artifacts and hashes",
+    "  help                 Show this help",
+    "",
+  ].join("\n");
+}
+
+function copyFileIfNeeded(source, target, { force = false } = {}) {
+  mkdirSync(dirname(target), { recursive: true });
+  const sourceText = readFileSync(source, "utf8");
+  if (!force && existsSync(target) && readFileSync(target, "utf8") === sourceText) {
+    return { path: target, changed: false };
+  }
+  if (!force && existsSync(target)) {
+    return { path: target, changed: false, skipped: true };
+  }
+  writeFileSync(target, sourceText);
+  return { path: target, changed: true };
+}
+
+function init() {
+  const project = ensureProjectState();
+  let sessionsCreated = false;
+  withProjectStateLockSync({ project, reason: "init-session-registry" }, () => {
+    if (!existsSync(sessionRegistryPath)) {
+      mkdirSync(dirname(sessionRegistryPath), { recursive: true });
+      writeJsonAtomic(sessionRegistryPath, {
+        schemaVersion: 2,
+        projectId: project.projectId,
+        rooms: {},
+        freshThreads: [],
+      });
+      sessionsCreated = true;
+    }
+  });
+
+  const skillSource = resolve(packageRoot, ".codex", "skills", "chatgpt-pro-line", "SKILL.md");
+  const skillTarget = resolve(project.repoRoot, ".codex", "skills", "chatgpt-pro-line", "SKILL.md");
+  const skill = copyFileIfNeeded(skillSource, skillTarget, { force: flag("force-skill") });
+
+  return {
+    ok: true,
+    command: "init",
+    project,
+    sessions: {
+      path: sessionRegistryPath,
+      created: sessionsCreated,
+    },
+    skill,
+    alias: arg("alias") || null,
+  };
+}
+
+const command = process.argv[2] || "help";
+const rest = process.argv.slice(3);
+
+if (command === "help" || command === "--help" || command === "-h") {
+  console.log(usage());
+  process.exit(0);
+}
+
+if (command === "init") {
+  try {
+    console.log(JSON.stringify(init(), null, 2));
+    process.exit(0);
+  } catch (error) {
+    console.log(JSON.stringify({
+      ok: false,
+      command: "init",
+      errorCode: error?.errorCode || "chatgpt.init_failed",
+      error: String(error?.message || error),
+    }, null, 2));
+    process.exit(1);
+  }
+}
+
+if (command === "doctor") {
+  process.argv = [process.argv[0], resolve(packageRoot, "scripts", "chatgpt-doctor.mjs"), ...rest];
+  await import("../scripts/chatgpt-doctor.mjs");
+} else if (command === "status") {
+  process.argv = [process.argv[0], resolve(packageRoot, "scripts", "chatgpt-status.mjs"), ...rest];
+  await import("../scripts/chatgpt-status.mjs");
+} else if (command === "call") {
+  process.argv = [process.argv[0], resolve(packageRoot, "scripts", "chatgpt-call.mjs"), ...rest];
+  await import("../scripts/chatgpt-call.mjs");
+} else if (command === "read") {
+  process.argv = [process.argv[0], resolve(packageRoot, "scripts", "chatgpt-read-current.mjs"), ...rest];
+  await import("../scripts/chatgpt-read-current.mjs");
+} else if (command === "rooms") {
+  process.argv = [process.argv[0], resolve(packageRoot, "scripts", "chatgpt-rooms.mjs"), ...rest];
+  await import("../scripts/chatgpt-rooms.mjs");
+} else if (command === "context") {
+  process.argv = [process.argv[0], resolve(packageRoot, "scripts", "context-bundle.mjs"), ...rest];
+  await import("../scripts/context-bundle.mjs");
+} else if (command === "history") {
+  process.argv = [process.argv[0], resolve(packageRoot, "scripts", "chatgpt-history.mjs"), ...rest];
+  await import("../scripts/chatgpt-history.mjs");
+} else if (command === "transcript") {
+  process.argv = [process.argv[0], resolve(packageRoot, "scripts", "chatgpt-transcript.mjs"), ...rest];
+  await import("../scripts/chatgpt-transcript.mjs");
+} else {
+  console.error(`Unknown chatgpt-pro command: ${command}\n\n${usage()}`);
+  process.exit(1);
+}

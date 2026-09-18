@@ -1,0 +1,12 @@
+node_modules/
+artifacts/
+runtime.local.json
+*.local.json
+.env*
+!config.example.json
+__pycache__/
+*.pyc
+*.sqlite*
+*.db
+*profile*/
+!experiments/profile-repro/

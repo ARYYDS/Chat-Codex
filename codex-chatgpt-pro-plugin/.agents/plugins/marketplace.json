@@ -1,0 +1,20 @@
+{
+  "name": "codex-chatgpt-pro-plugin",
+  "interface": {
+    "displayName": "Codex ChatGPT Pro Plugin"
+  },
+  "plugins": [
+    {
+      "name": "codex-chatgpt-pro-plugin",
+      "source": {
+        "source": "local",
+        "path": "./plugins/codex-chatgpt-pro-plugin"
+      },
+      "policy": {
+        "installation": "AVAILABLE",
+        "authentication": "ON_INSTALL"
+      },
+      "category": "Developer Tools"
+    }
+  ]
+}

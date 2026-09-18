@@ -1,0 +1,81 @@
+# ==============================================================================
+# Chat-Codex 根目录防护规则 (.gitignore)
+# 严格杜绝任何本地运行态沙盒、凭据数据库、编译缓存与环境配置入库
+# ==============================================================================
+
+# 1. 活跃运行态沙盒与浏览器 Profile (受保护数据，严禁入库)
+sub-instance-*/
+gui-app-profile/
+master-seed-profile/
+cloned-profile-*/
+*profile*/
+.runtime/
+.codegraph/
+
+# 2. 本地私有配置与环境变量
+.env
+.env.*
+.env.local
+*.local.json
+runtime.local.json
+!config.example.json
+
+# 3. 编译中间产物、对象文件与依赖目录
+node_modules/
+**/target/
+target/
+src-tauri/target/
+WebChat-Assistant/src-tauri/target/
+handoff-core/src-tauri/target/
+artifacts/
+dist/
+build/
+out/
+__pycache__/
+*.pyc
+*.pyd
+
+# 4. 浏览器缓存、崩溃转储与 SQLite 凭据库
+Crashpad/
+Cache/
+Code Cache/
+DawnGraphiteCache/
+GPUCache/
+GrShaderCache/
+ShaderCache/
+Service Worker/
+IndexedDB/
+Local Storage/
+*.sqlite*
+*.db
+*.db-*
+*.db-journal
+*.ldb
+
+# 5. 日志与临时调试文件
+*.log
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+*.tmp
+*.bak
+inspect_live/
+vss_*_link/
+
+# 6. 二进制与可执行文件过滤 (仅保留根目录桌面独立客户端)
+*.exe
+!/chat-codex-studio.exe
+*.dll
+*.so
+*.dylib
+*.pdb
+*.d
+
+# 7. 操作系统与 IDE 专属配置
+.DS_Store
+Thumbs.db
+desktop.ini
+.vscode/
+.idea/
+*.suo
+*.user

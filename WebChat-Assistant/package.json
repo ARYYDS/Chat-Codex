@@ -1,0 +1,28 @@
+{
+  "name": "webchat-assistant",
+  "version": "1.0.0",
+  "description": "Enterprise-grade WebChat reasoning companion with Master-Worker isolation, dual-track queuing, two-phase MCP protocol, and native Tauri desktop studio.",
+  "main": "bin/assistant.js",
+  "bin": {
+    "webchat": "bin/assistant.js"
+  },
+  "scripts": {
+    "start": "node bin/assistant.js gui",
+    "doctor": "node bin/assistant.js doctor",
+    "chat": "node bin/assistant.js chat",
+    "sync": "node bin/assistant.js sync",
+    "gui": "node bin/assistant.js gui",
+    "mcp": "node bin/assistant.js mcp",
+    "setup": "node bin/assistant.js setup",
+    "build:tauri": "cargo build --release --manifest-path src-tauri/Cargo.toml"
+  },
+  "keywords": [
+    "chatgpt",
+    "cdp",
+    "mcp",
+    "agent",
+    "tauri",
+    "desktop"
+  ],
+  "license": "MIT"
+}

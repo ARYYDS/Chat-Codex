@@ -1,0 +1,583 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Chat-Codex Studio v2.5.0 - 双脑协同与自动化调度大盘</title>
+  <link rel="stylesheet" href="styles.css">
+</head>
+<body>
+
+  <!-- ========================================================================
+       顶部 Header 状态栏
+       ======================================================================== -->
+  <header class="top-header">
+    <div class="brand-section">
+      <div class="brand-icon">⚡</div>
+      <div class="brand-title">
+        Chat-Codex Studio
+        <span class="brand-version">v2.5.0</span>
+      </div>
+    </div>
+
+    <div class="header-status-cluster">
+      <div class="status-badge badge-success" id="header-master-badge" title="Chrome 种子沙盒 (Port 9225) 凭据授权状态">
+        <span class="status-dot dot-green" id="header-master-dot"></span>
+        <span id="header-master-text">Master: 9225 | AUTHORIZED</span>
+      </div>
+      <div class="status-badge badge-success" id="header-workers-badge" title="Worker 运行时沙盒在群在线状态">
+        <span class="status-dot dot-green" id="header-workers-dot"></span>
+        <span id="header-workers-text">Workers: 9222,9223 ONLINE (100%)</span>
+      </div>
+      <div class="status-badge badge-mcp" id="header-mcp-badge" title="MCP 服务端与传输协议状态">
+        <span class="status-dot dot-blue"></span>
+        <span id="header-mcp-text">🔌 MCP: RUNNING / IPv4</span>
+      </div>
+    </div>
+
+    <div class="header-actions">
+      <button class="btn btn-primary" id="btn-launch-master" title="拉起 9225 种子沙盒进行人工登录保活">
+        <span>🔑</span> 拉起母版登录
+      </button>
+      <button class="btn" id="btn-global-gc" title="全局强制关闭空闲 Tab 释放 Blink/V8 内存">
+        <span>🧹</span> 全局一键强制GC
+      </button>
+      <!-- 辅助管理按钮（收敛至系统托盘，DOM 保留供自动化调用） -->
+      <button class="btn btn-blue" id="btn-sync-cookies" title="纯内存提取 Master Cookie 并注入 Worker 运行时" style="display: none;">
+        <span>🔄</span> 内存凭据热分发
+      </button>
+      <button class="btn" id="btn-open-settings" title="查看与调整运行时端口、存储路径与错峰抖动参数" style="display: none;">
+        <span>⚙️</span> 系统设置
+      </button>
+      <button class="btn btn-danger" id="btn-emergency-stop" title="紧急软中断并硬熔断所有子孙进程树" style="display: none;">
+        <span>🛑</span> 紧急停止
+      </button>
+    </div>
+  </header>
+
+  <!-- ========================================================================
+       主工作区容器
+       ======================================================================== -->
+  <main class="main-container">
+
+    <!-- 双核心极简 KPI 实时看板大盘 -->
+    <section>
+      <div class="section-header">
+        <div class="section-title">双核心实时看板大盘 (Active Slots & Delivered Metrics)</div>
+        <div class="section-badge" id="telemetry-update-time">1Hz 原生遥测</div>
+      </div>
+
+      <div class="kpi-grid">
+        <!-- 卡片 1: 活跃在途槽位负载 (Chat / Work 双轨配额) -->
+        <div class="kpi-card card-accent-green" id="kpi-card-active">
+          <div class="kpi-card-header">
+            <span class="kpi-card-title">
+              <span class="kpi-card-icon">🟢</span> 活跃在途槽位负载 (In-Flight Slots)
+            </span>
+            <span class="status-dot dot-green" id="kpi-heartbeat-dot"></span>
+          </div>
+          <div class="kpi-value-row">
+            <div class="kpi-odometer-box" id="odo-active-container">
+              <div id="odo-active-chats">--</div>
+            </div>
+            <span class="kpi-unit">/ 动态上限</span>
+          </div>
+          <div class="kpi-meta-list">
+            <div class="kpi-meta-item">
+              <span class="kpi-meta-label">● 状态机:</span>
+              <span class="kpi-meta-val text-green" id="kpi-heartbeat-status">实时遥测连接中...</span>
+            </div>
+            <div class="kpi-progress-bar-container">
+              <div class="progress-track">
+                <div class="progress-fill" id="kpi-active-progress" style="width: 0%;"></div>
+              </div>
+              <div class="progress-label-row">
+                <span>0</span>
+                <span id="kpi-active-load-text">0 / 10 负载</span>
+                <span>Max</span>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <!-- 卡片 2: 历史累计 Chat 会话数与 Token 吞吐 -->
+        <div class="kpi-card card-accent-blue" id="kpi-card-total">
+          <div class="kpi-card-header">
+            <span class="kpi-card-title">
+              <span class="kpi-card-icon">📊</span> 累计交付研报与会话 (Delivered Total)
+            </span>
+            <span class="section-badge">All Time</span>
+          </div>
+          <div class="kpi-value-row">
+            <div class="kpi-odometer-box" id="odo-total-container">
+              <div id="odo-total-chats">--</div>
+            </div>
+            <span class="kpi-unit">份研报已归档</span>
+          </div>
+          <div class="kpi-meta-list">
+            <div class="kpi-meta-item">
+              <span class="kpi-meta-label">• 预估 Token 吞吐量:</span>
+              <span class="kpi-meta-val text-blue" id="kpi-total-tokens">0 Tok</span>
+            </div>
+            <div class="kpi-meta-item">
+              <span class="kpi-meta-label">• 调度 SLA 交付率:</span>
+              <span class="kpi-meta-val text-green" id="kpi-sla-rate">--</span>
+            </div>
+          </div>
+        </div>
+
+        <!-- 裁剪的次要指标 DOM 桩（保留兼容性，隐藏不渲染） -->
+        <div style="display: none;">
+          <div id="odo-memory-mb"></div>
+          <div id="odo-adoption-rate"></div>
+          <div id="kpi-ephemeral-saved"></div>
+          <div id="kpi-process-kills"></div>
+          <div id="kpi-human-rejects"></div>
+          <div id="kpi-memory-processes"></div>
+        </div>
+      </div>
+    </section>
+
+    <!-- Worker 子浏览器实例矩阵 (Port Pool) -->
+    <section>
+      <div class="section-header">
+        <div class="section-title">Worker 子浏览器实例矩阵 (Port Pool)</div>
+        <button class="btn btn-purple" id="btn-add-worker" title="拉起新的空白 Chrome Worker 实例并动态注入凭据">
+          <span>+</span> 动态拉起新 Worker (内存)
+        </button>
+      </div>
+
+      <div class="worker-matrix-grid" id="worker-cards-container">
+        <!-- Worker #1 卡片 (Port 9222) -->
+        <div class="worker-card" id="worker-card-9222">
+          <div class="worker-card-header">
+            <div class="worker-identity">
+              <span class="worker-icon">🖥️</span>
+              <span class="worker-title">WORKER #1</span>
+              <span class="worker-port-tag">Port 9222</span>
+              <span class="worker-instance-tag">sub-instance-1</span>
+            </div>
+            <span class="worker-status-pill status-waiting" id="worker-9222-status-pill">
+              <span class="status-dot dot-yellow"></span> 探测中...
+            </span>
+          </div>
+
+          <div class="worker-path-row" title="C:\code\Chat-Codex\sub-instance-1">
+            路径: C:\code\Chat-Codex\sub-instance-1
+          </div>
+
+          <div class="worker-details-grid">
+            <div class="worker-metric-group">
+              <span class="worker-metric-label">物理内存占用:</span>
+              <span class="worker-metric-value" id="worker-9222-memory">-- MB</span>
+            </div>
+            <div class="worker-metric-group">
+              <span class="worker-metric-label">进程树与 PID:</span>
+              <span class="worker-metric-value" id="worker-9222-pids">--</span>
+            </div>
+          </div>
+
+          <div class="worker-current-task">
+            <div class="task-label-tag">正在执行任务</div>
+            <div class="task-title-text" id="worker-9222-task">[空闲待命] 等待任务派发...</div>
+            <div class="kpi-meta-item" style="margin-top: 4px; font-size: 11px;">
+              <span>耗时: <strong id="worker-9222-duration">--:--:--</strong></span>
+              <span>字数: <strong id="worker-9222-words">0 字</strong></span>
+              <span id="worker-9222-search-status" style="color: var(--accent-cyan);">搜索: 暂无</span>
+            </div>
+            <div class="progress-track" style="margin-top: 6px; height: 5px;">
+              <div class="progress-fill fill-blue" id="worker-9222-progress" style="width: 0%;"></div>
+            </div>
+          </div>
+
+          <div class="worker-actions-row">
+            <button class="btn btn-danger" onclick="window.ChatCodexApp.stopWorker(9222)" title="安全停止此实例">
+              <span>⏹️</span> 停止
+            </button>
+            <button class="btn btn-blue" onclick="window.ChatCodexApp.refreshWorker(9222)" title="重新由 Master 注入最新 Cookie">
+              <span>🔄</span> 内存热刷新
+            </button>
+            <button class="btn" onclick="window.ChatCodexApp.forceWorkerGC(9222)" title="释放后台空闲 Tab">
+              <span>🧹</span> 强制 Tab GC
+            </button>
+          </div>
+        </div>
+
+        <!-- Worker #2 卡片 (Port 9223) -->
+        <div class="worker-card" id="worker-card-9223">
+          <div class="worker-card-header">
+            <div class="worker-identity">
+              <span class="worker-icon">🖥️</span>
+              <span class="worker-title">WORKER #2</span>
+              <span class="worker-port-tag">Port 9223</span>
+              <span class="worker-instance-tag">sub-instance-2</span>
+            </div>
+            <span class="worker-status-pill status-waiting" id="worker-9223-status-pill">
+              <span class="status-dot dot-yellow"></span> 探测中...
+            </span>
+          </div>
+
+          <div class="worker-path-row" title="C:\code\Chat-Codex\sub-instance-2">
+            路径: C:\code\Chat-Codex\sub-instance-2
+          </div>
+
+          <div class="worker-details-grid">
+            <div class="worker-metric-group">
+              <span class="worker-metric-label">物理内存占用:</span>
+              <span class="worker-metric-value" id="worker-9223-memory">-- MB</span>
+            </div>
+            <div class="worker-metric-group">
+              <span class="worker-metric-label">进程树与 PID:</span>
+              <span class="worker-metric-value" id="worker-9223-pids">--</span>
+            </div>
+          </div>
+
+          <div class="worker-current-task">
+            <div class="task-label-tag">正在执行任务</div>
+            <div class="task-title-text" id="worker-9223-task">[空闲待命] 等待任务派发...</div>
+            <div class="kpi-meta-item" style="margin-top: 4px; font-size: 11px;">
+              <span>耗时: <strong id="worker-9223-duration">--:--:--</strong></span>
+              <span>字数: <strong id="worker-9223-words">0 字</strong></span>
+              <span id="worker-9223-search-status">搜索: 暂无</span>
+            </div>
+            <div class="progress-track" style="margin-top: 6px; height: 5px;">
+              <div class="progress-fill fill-purple" id="worker-9223-progress" style="width: 0%;"></div>
+            </div>
+          </div>
+
+          <div class="worker-actions-row">
+            <button class="btn btn-danger" onclick="window.ChatCodexApp.stopWorker(9223)" title="安全停止此实例">
+              <span>⏹️</span> 停止
+            </button>
+            <button class="btn btn-blue" onclick="window.ChatCodexApp.refreshWorker(9223)" title="重新由 Master 注入最新 Cookie">
+              <span>🔄</span> 内存热刷新
+            </button>
+            <button class="btn" onclick="window.ChatCodexApp.forceWorkerGC(9223)" title="释放后台空闲 Tab">
+              <span>🧹</span> 强制 Tab GC
+            </button>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- 10 路错峰梯度任务调度流水线大盘 -->
+    <section>
+      <div class="table-panel">
+        <div class="table-panel-header">
+          <div class="section-title" style="margin-bottom: 0;">
+            10 路错峰梯度任务调度流水线 (STAGGERED DISPATCH TIMELINE)
+          </div>
+          <div style="display: flex; align-items: center; gap: 10px;">
+            <span class="status-badge badge-warning">模式: 自适应随机抖动 (10s + 1~10s)</span>
+            <button class="btn btn-primary" id="btn-start-dispatch" title="立即启动 10 路梯度错峰任务队列">
+              <span>🚀</span> 启动 10 路错峰调度
+            </button>
+          </div>
+        </div>
+
+        <div class="table-responsive">
+          <table class="pipeline-table" id="pipeline-tasks-table">
+            <thead>
+              <tr>
+                <th style="width: 50px;">ID</th>
+                <th>任务标题 (Task Title)</th>
+                <th style="width: 100px;">派遣时刻</th>
+                <th style="width: 100px;">当前耗时</th>
+                <th style="width: 110px;">实时生成字</th>
+                <th style="width: 110px;">预估 Token</th>
+                <th style="width: 150px;">状态 (Status)</th>
+                <th style="width: 130px; text-align: center;">操作 (Actions)</th>
+              </tr>
+            </thead>
+            <tbody id="pipeline-tasks-tbody">
+              <!-- 动态或预置 10 路任务行 -->
+            </tbody>
+          </table>
+        </div>
+
+        <div class="table-panel-footer">
+          <span>💡 提示: Agent 全自主主导调度，运行中支持人工单任务 [🛑 强制停止]，单击行查阅研报</span>
+          <span id="tasks-page-info">Page: [ 1 ] / 共 10 个错峰并发任务</span>
+        </div>
+      </div>
+    </section>
+
+  </main>
+
+  <!-- ========================================================================
+       SlideOver Drawer (研报极简审阅抽屉 - 右侧滑入)
+       ======================================================================== -->
+  <div class="drawer-backdrop" id="drawer-backdrop"></div>
+  <aside class="slideover-drawer" id="slideover-drawer">
+    <div class="drawer-header">
+      <div class="drawer-header-left">
+        <button class="btn btn-icon-only" id="btn-close-drawer" title="收起抽屉">
+          <span>◀</span>
+        </button>
+        <div class="drawer-title-box">
+          <div class="drawer-title" id="drawer-task-title">[请选择任务]</div>
+          <div class="drawer-subtitle" id="drawer-archive-path">
+            归档定位: runs/results.json
+          </div>
+        </div>
+      </div>
+      <div class="drawer-header-actions">
+        <button class="btn btn-blue" id="btn-open-vscode" title="在本地 VS Code 中快速打开研报与代码">
+          <span>💻</span> 在 VS Code 中打开
+        </button>
+        <button class="btn btn-icon-only" id="btn-expand-drawer" title="全屏放大/恢复窗口">
+          <span>⛶</span>
+        </button>
+        <button class="btn btn-icon-only" id="btn-close-drawer-x" title="关闭抽屉">
+          <span>✕</span>
+        </button>
+      </div>
+    </div>
+
+    <div class="drawer-meta-bar">
+      <span>耗时: <strong id="drawer-meta-duration" style="color: var(--text-primary);">--</strong></span>
+      <span>字数: <strong id="drawer-meta-words" style="color: var(--text-primary);">0 字</strong></span>
+      <span>预估 Token: <strong id="drawer-meta-tokens" style="color: var(--accent-cyan);">0 Tok</strong></span>
+      <span class="status-badge badge-success" id="drawer-meta-status">
+        ✅ 已校验原子落盘
+      </span>
+    </div>
+
+    <!-- 视图切换 Tab -->
+    <div class="drawer-tabs">
+      <div class="drawer-tab active" data-tab="report" id="tab-btn-report">
+        <span>📄</span> Markdown 研报正文 (7大章节)
+      </div>
+      <div class="drawer-tab" data-tab="receipt" id="tab-btn-receipt">
+        <span>📋</span> 原始 CDP 握手回执
+      </div>
+      <!-- 隐藏保留供兼容 -->
+      <div class="drawer-tab" data-tab="diff" id="tab-btn-diff" style="display: none;">
+        <span>🔍</span> 代码 Diff
+      </div>
+    </div>
+
+    <!-- 抽屉滚动内容区域 -->
+    <div class="drawer-content">
+      <!-- Tab 1: Markdown 研报正文 -->
+      <div class="drawer-tab-pane active" id="pane-report">
+        <div class="markdown-body" id="drawer-report-content">
+          <!-- 动态渲染 7 大章节 -->
+        </div>
+      </div>
+
+      <!-- Tab 2: 原始 CDP 握手回执 -->
+      <div class="drawer-tab-pane" id="pane-receipt">
+        <pre class="json-receipt-viewer" id="drawer-receipt-content"></pre>
+      </div>
+
+      <!-- 隐藏保留供兼容 -->
+      <div class="drawer-tab-pane" id="pane-diff" style="display: none;">
+        <div id="diff-viewer-content"></div>
+      </div>
+    </div>
+  </aside>
+
+    </div>
+  </aside>
+
+  <!-- ========================================================================
+       交互模态弹窗 1: Master-Seed 登录引导弹窗
+       ======================================================================== -->
+  <div class="modal-overlay" id="modal-master-login">
+    <div class="modal-card">
+      <div class="modal-header">
+        <div class="modal-title">
+          <span>🔑</span> Chrome 母版 (Master-Seed) 浏览器环境初始化与登录保活向导
+        </div>
+        <button class="btn btn-icon-only" onclick="window.ChatCodexApp.closeMasterModal()" title="关闭">✕</button>
+      </div>
+
+      <div class="modal-body">
+        <!-- 步骤导航 Stepper -->
+        <div class="stepper-container">
+          <div class="stepper-step completed" id="step-1">
+            <div class="stepper-circle">1</div>
+            <span>拉起种子沙盒</span>
+          </div>
+          <div class="stepper-line completed" id="step-line-1"></div>
+          <div class="stepper-step active" id="step-2">
+            <div class="stepper-circle">2</div>
+            <span>人工安全认证</span>
+          </div>
+          <div class="stepper-line" id="step-line-2"></div>
+          <div class="stepper-step" id="step-3">
+            <div class="stepper-circle">3</div>
+            <span>内存直读热分发</span>
+          </div>
+        </div>
+
+        <!-- 系统状态通告 -->
+        <div class="info-box">
+          <div class="info-box-title">
+            <span>🛡️</span> 系统状态通告
+          </div>
+          <div>• 母版物理路径: <code>C:\GPT-Chat-codex-handoff\master-seed-profile\</code> (Windows 纯净环境)</div>
+          <div>• 监听控制端口: <code>127.0.0.1:9225</code> (已成功建立 Browser Target CDP 连接)</div>
+          <div>• 安全隔离机制: 严格切断 Page Target 探测，零 DOM 探针注入，彻底杜绝 Turnstile 验证码死锁</div>
+        </div>
+
+        <!-- 操作指引 -->
+        <div class="info-box">
+          <div class="info-box-title">
+            <span>📋</span> 操作指引 - 请在已弹出的官方 Chrome 窗口中操作
+          </div>
+          <ol style="padding-left: 18px; margin: 4px 0 0 0; display: flex; flex-direction: column; gap: 4px;">
+            <li>系统已为您自动打开 <code>https://chatgpt.com/</code> ；</li>
+            <li>请在窗口中完成登录（支持帐密、Google 授权以及 Authenticator MFA 动态口令）；</li>
+            <li>若遇到 Cloudflare Turnstile 智能验证码挑战，请直接手动勾选完成；</li>
+            <li>完成登录后，系统将自动通过 Browser Target (139ms 纯内存提取) 同步至各 Worker！</li>
+          </ol>
+        </div>
+
+        <!-- 后台心跳嗅探状态 -->
+        <div class="sniffing-box">
+          <div class="sniffing-header">
+            <span>CDP 端口 9225 连通性 : <strong style="color: var(--accent-emerald);">[ OK ] 延迟 12ms</strong></span>
+            <span id="sniffing-status-label" style="color: var(--accent-yellow);">⏳ 5s 周期嗅探凭据中...</span>
+          </div>
+          <div class="progress-track" style="height: 8px;">
+            <div class="progress-fill fill-blue progress-fill-striped" id="sniffing-progress-bar" style="width: 58%;"></div>
+          </div>
+          <div style="font-size: 11px; font-family: var(--font-mono); color: var(--text-dim); display: flex; justify-content: space-between;">
+            <span>正在监听: __Secure-next-auth.session-token</span>
+            <span id="sniffing-percent-text">58%</span>
+          </div>
+        </div>
+
+        <!-- 提示栏 -->
+        <div class="info-box info-box-alert">
+          💡 <strong>为什么必须使用母版？</strong> 母版仅用于人工保活，绝不运行任何批量自动化脚本，彻底杜绝封号风控风险。
+        </div>
+      </div>
+
+      <div class="modal-footer">
+        <button class="btn" id="btn-cancel-master" onclick="window.ChatCodexApp.closeMasterModal()">
+          取消并关闭母版
+        </button>
+        <button class="btn btn-primary" id="btn-confirm-master-sync" onclick="window.ChatCodexApp.confirmMasterSync()">
+          <span>✅</span> 我已完成登录，立即同步
+        </button>
+      </div>
+    </div>
+  </div>
+
+  <!-- ========================================================================
+       交互模态弹窗 2: 人工干预驳回弹窗 (Drift Arbitration Modal)
+       ======================================================================== -->
+  <div class="modal-overlay" id="modal-arbitration">
+    <div class="modal-card">
+      <div class="modal-header">
+        <div class="modal-title">
+          <span>🛑</span> 人工最高干预：强制驳回与任务异步拆解
+        </div>
+        <button class="btn btn-icon-only" onclick="window.ChatCodexApp.closeArbitrationModal()" title="关闭">✕</button>
+      </div>
+
+      <div class="modal-body">
+        <div class="info-box info-box-alert">
+          ⚠️ <strong>触发异步任务句柄熔断：</strong> 将立即切断当前建议补丁的影子采纳流程，并通过 <code>mcp-async-handle</code> 为本地 Agent 注入二次拆解指引，破除 60 秒挂起限制。
+        </div>
+
+        <div class="form-group">
+          <label class="form-label" for="arbitration-reason-select">知识偏移与驳回归因选择 (Attribution):</label>
+          <select class="form-select" id="arbitration-reason-select">
+            <option value="hallucination">模型出现事实性幻觉 (Hallucination - 伪造不存在的 API/符号)</option>
+            <option value="destructive_refactoring">破坏性代码重构 (Destructive Refactoring - 违背零改动最小补丁原则)</option>
+            <option value="outdated_protocol">语法与协议过时漂移 (Outdated Protocol / Syntax - 引用已被官方废弃模式)</option>
+            <option value="scope_violation">越界修改未授权模块 (Scope Violation - 篡改工作区核心配置或上游仓库)</option>
+            <option value="security_breach">其他安全策略阻断 (Security Policy Breach)</option>
+          </select>
+        </div>
+
+        <div class="form-group">
+          <label class="form-label" for="arbitration-prompt-input">
+            二次细分拆解指引 (Inject Breakdown Prompt to Local Agent):
+          </label>
+          <textarea
+            class="form-textarea"
+            id="arbitration-prompt-input"
+            rows="4"
+            placeholder="例如：原实现引入了已废弃的旧版库，请重新查阅 docs/GUI客户端设计/design.md 规范，将改动局限在自适应随机抖动错峰算法并保持向前兼容。"
+          ></textarea>
+        </div>
+
+        <div style="display: flex; align-items: center; gap: 8px; font-size: 12px; color: var(--text-secondary);">
+          <input type="checkbox" id="arbitration-checkbox-audit" checked>
+          <label for="arbitration-checkbox-audit">同步向 Agent 发送中断指令并记录至 runs/arbitration_ledger.json</label>
+        </div>
+      </div>
+
+      <div class="modal-footer">
+        <button class="btn" onclick="window.ChatCodexApp.closeArbitrationModal()">取消</button>
+        <button class="btn btn-danger" id="btn-submit-arbitration" onclick="window.ChatCodexApp.submitArbitration()">
+          <span>🚨</span> 确认熔断驳回并派发拆解
+        </button>
+      </div>
+    </div>
+  </div>
+
+  <!-- ========================================================================
+       交互模态弹窗 3: 系统运行时设置弹窗 (Settings Modal)
+       ======================================================================== -->
+  <div class="modal-overlay" id="modal-settings">
+    <div class="modal-card">
+      <div class="modal-header">
+        <div class="modal-title">
+          <span>⚙️</span> Chat-Codex Studio 系统运行时设置
+        </div>
+        <button class="btn btn-icon-only" onclick="window.ChatCodexApp.closeSettingsModal()" title="关闭">✕</button>
+      </div>
+
+      <div class="modal-body">
+        <div class="form-group">
+          <label class="form-label">Master 种子沙盒控制端口 (Master CDP Port):</label>
+          <input type="text" class="form-input" id="setting-master-port" value="9225" readonly>
+        </div>
+
+        <div class="form-group">
+          <label class="form-label">Worker 活跃沙盒端口池 (Worker Port Pool):</label>
+          <input type="text" class="form-input" id="setting-worker-ports" value="9222, 9223">
+        </div>
+
+        <div class="form-group">
+          <label class="form-label">错峰基础间隔与随机抖动区间 (Stagger Interval & Jitter):</label>
+          <div style="display: flex; gap: 10px;">
+            <input type="text" class="form-input" id="setting-stagger-base" value="10000 ms (Base)" style="flex: 1;">
+            <input type="text" class="form-input" id="setting-stagger-jitter" value="1000 ~ 9000 ms (Jitter)" style="flex: 1;">
+          </div>
+        </div>
+
+        <div class="form-group">
+          <label class="form-label">统一运行时根目录 (Storage Root Topology):</label>
+          <input type="text" class="form-input" id="setting-storage-root" value="C:\GPT-Chat-codex-handoff\" readonly>
+        </div>
+
+        <div class="form-group">
+          <label class="form-label">遥测传输模式 (Telemetry Protocol):</label>
+          <div class="status-badge badge-mcp" style="align-self: flex-start;">
+            SSE (/api/events) 优先，断开自动降级为 2.5s 原生短轮询 (/api/status)
+          </div>
+        </div>
+      </div>
+
+      <div class="modal-footer">
+        <button class="btn" onclick="window.ChatCodexApp.closeSettingsModal()">关闭</button>
+        <button class="btn btn-primary" onclick="window.ChatCodexApp.saveSettings()">保存配置</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- Toast 消息容器 -->
+  <div class="toast-container" id="toast-container"></div>
+
+  <!-- 引入机械滚轮与主交互应用脚本 -->
+  <script src="odometer.js"></script>
+  <script src="app.js"></script>
+</body>
+</html>

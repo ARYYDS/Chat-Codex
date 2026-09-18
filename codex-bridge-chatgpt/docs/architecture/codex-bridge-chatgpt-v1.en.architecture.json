@@ -1,0 +1,162 @@
+{
+  "schema_version": 1,
+  "diagram_type": "architecture",
+  "meta": {
+    "title": "Codex Bridge to ChatGPT: V0.2 Safety Architecture",
+    "locale": "en",
+    "quality_profile": "showcase",
+    "viewBox": [1380, 670],
+    "views": [
+      {
+        "id": "one-sentence",
+        "label": "One-sentence start",
+        "focus": ["user", "skill", "doctor", "consent"],
+        "note": "First use checks the environment and discloses non-zero account risk before browser automation is enabled."
+      },
+      {
+        "id": "reasoning-loop",
+        "label": "Reasoning loop",
+        "focus": ["consent", "codex", "contract", "browser", "chatgpt", "adoption", "edit_test"],
+        "note": "One Packet, one Send activation, and one visible response copy; uncertainty stops the handoff."
+      },
+      {
+        "id": "completion",
+        "label": "Verifiable completion",
+        "focus": ["edit_test", "receipt"],
+        "note": "The run is complete only after local tests, hash binding, and the complete gate all pass."
+      }
+    ]
+  },
+  "components": [
+    {
+      "id": "user",
+      "type": "external",
+      "label": "User",
+      "sublabel": "One-sentence call",
+      "pos": [25, 285],
+      "size": [125, 68]
+    },
+    {
+      "id": "skill",
+      "type": "cloud",
+      "label": "Plugin + Bridge Skill",
+      "sublabel": "Install shell + workflow",
+      "tag": "Mac / Windows",
+      "pos": [190, 285],
+      "size": [175, 68]
+    },
+    {
+      "id": "doctor",
+      "type": "security",
+      "label": "Automatic Doctor",
+      "sublabel": "Runtime, Browser, account",
+      "tag": "fail closed",
+      "pos": [405, 285],
+      "size": [160, 68]
+    },
+    {
+      "id": "consent",
+      "type": "security",
+      "label": "Risk Consent Gate",
+      "sublabel": "Non-zero account risk / off",
+      "tag": "explicit consent",
+      "pos": [600, 285],
+      "size": [160, 68]
+    },
+    {
+      "id": "codex",
+      "type": "backend",
+      "label": "Codex / Luna",
+      "sublabel": "Evidence, packets, routing",
+      "pos": [795, 285],
+      "size": [150, 68]
+    },
+    {
+      "id": "project",
+      "type": "database",
+      "label": "Local Repository",
+      "sublabel": "Rules, code, tests",
+      "pos": [795, 80],
+      "size": [150, 68]
+    },
+    {
+      "id": "contract",
+      "type": "security",
+      "label": "Contract Validator",
+      "sublabel": "Packet / Result / SHA-256",
+      "pos": [985, 285],
+      "size": [165, 68]
+    },
+    {
+      "id": "browser",
+      "type": "frontend",
+      "label": "Codex In-app Browser",
+      "sublabel": "Reuses desktop login session",
+      "pos": [1185, 285],
+      "size": [175, 68]
+    },
+    {
+      "id": "chatgpt",
+      "type": "external",
+      "label": "ChatGPT Web",
+      "sublabel": "GPT-5.6 Sol deep reasoning",
+      "pos": [1185, 475],
+      "size": [175, 68]
+    },
+    {
+      "id": "adoption",
+      "type": "security",
+      "label": "Local Adoption Gate",
+      "sublabel": "accepted / rejected / deferred",
+      "pos": [945, 475],
+      "size": [195, 68]
+    },
+    {
+      "id": "edit_test",
+      "type": "backend",
+      "label": "Local Edit & Test",
+      "sublabel": "Codex reconstructs and verifies",
+      "pos": [710, 475],
+      "size": [190, 68]
+    },
+    {
+      "id": "receipt",
+      "type": "database",
+      "label": "Run Receipt + Complete Gate",
+      "sublabel": "Evidence, hashes, models, test status",
+      "tag": "complete only",
+      "pos": [460, 475],
+      "size": [210, 68]
+    }
+  ],
+  "connections": [
+    {"id": "invoke", "from": "user", "to": "skill", "label": "one-sentence call", "variant": "emphasis", "labelDy": -28},
+    {"id": "preflight", "from": "skill", "to": "doctor", "label": "automatic preflight", "variant": "security", "labelDy": -28},
+    {"id": "risk-decision", "from": "doctor", "to": "consent", "label": "disclose + decide", "variant": "security", "labelDy": -28},
+    {"id": "ready", "from": "consent", "to": "codex", "label": "READY, then resume", "variant": "security", "labelDy": -28},
+    {"id": "read-project", "from": "project", "to": "codex", "label": "minimal evidence", "fromSide": "bottom", "toSide": "top", "labelDy": 24},
+    {"id": "packet", "from": "codex", "to": "contract", "label": "1–3K Packet", "variant": "emphasis", "labelDy": -28},
+    {"id": "transport", "from": "contract", "to": "browser", "label": "validate + sanitize", "variant": "security", "labelDy": -28},
+    {"id": "reason", "from": "browser", "to": "chatgpt", "label": "authenticated session", "fromSide": "bottom", "toSide": "top", "variant": "emphasis", "labelDy": 24},
+    {"id": "structured-result", "from": "chatgpt", "to": "adoption", "label": "structured Result", "variant": "dashed", "labelDy": -28},
+    {"id": "accept", "from": "adoption", "to": "edit_test", "label": "verified items only", "variant": "security", "labelDy": -28},
+    {"id": "evidence", "from": "edit_test", "to": "receipt", "label": "tests + hashes", "variant": "emphasis", "labelDy": -28}
+  ],
+  "cards": [
+    {
+      "dot": "cyan",
+      "title": "Distribution & use",
+      "items": ["Plugin handles discovery; the Skill owns orchestration", "Invocation stays one sentence; first use adds one explicit risk decision"]
+    },
+    {
+      "dot": "rose",
+      "title": "First run",
+      "items": ["Doctor checks installation; ChatGPT stays untouched until consent is ready", "Missing, declined, or stale consent fails closed instead of enabling silently"]
+    },
+    {
+      "dot": "emerald",
+      "title": "Authority & completion",
+      "items": ["One Send and one visible copy; no DOM response extraction or automatic retry", "ChatGPT proposes; Codex verifies, executes, and owns the complete gate"]
+    }
+  ]
+}

@@ -1,0 +1,4 @@
+interface:
+  display_name: "Chat-Codex Handoff"
+  short_description: "Use local Chat-Codex CLI/MCP"
+  default_prompt: "Use $chat-codex-handoff to call ChatGPT through the local Chat-Codex bridge."

@@ -1,0 +1,57 @@
+{
+  "schema_version": 2,
+  "packet_id": "architecture-2026-08-30-1k",
+  "artifacts": {
+    "packet": {
+      "path": "tests/artifacts/e2e-packet-1k.md",
+      "sha256": "0000000000000000000000000000000000000000000000000000000000000000",
+      "approximate_tokens": 1799
+    },
+    "result": {
+      "path": "tests/artifacts/e2e-result-1k-anonymous.md",
+      "sha256": "1111111111111111111111111111111111111111111111111111111111111111"
+    },
+    "browser_evidence": {
+      "path": "tests/artifacts/e2e-browser-evidence-1k-sol.md",
+      "sha256": "2222222222222222222222222222222222222222222222222222222222222222"
+    }
+  },
+  "codex_model": {
+    "requested": "gpt-5.6-luna",
+    "observed": null,
+    "status": "unverified",
+    "evidence": "The active Codex model is not exposed by current runtime evidence."
+  },
+  "chatgpt_model": {
+    "requested": "GPT-5.6 Sol",
+    "observed": "ChatGPT",
+    "status": "unverified",
+    "evidence": "The anonymous page displayed the generic ChatGPT selector and a Login button.",
+    "preflight_visible": false,
+    "postflight_visible": false
+  },
+  "privacy_review": {
+    "scope_minimized": true,
+    "credentials_scan_passed": true,
+    "semantic_privacy_reviewed": true,
+    "raw_diff_excluded": true,
+    "unrelated_files_excluded": true
+  },
+  "browser_transport": "verified",
+  "packet_validation": "passed",
+  "result_validation": "passed",
+  "pair_validation": "passed",
+  "local_revalidation": "passed",
+  "adoption": {
+    "status": "passed",
+    "accepted": [],
+    "rejected": [],
+    "deferred": [],
+    "local_evidence": ["Local fixture review completed."]
+  },
+  "local_changes": {
+    "status": "applied",
+    "reason": "Validator and Skill changes applied locally."
+  },
+  "tests": "passed"
+}

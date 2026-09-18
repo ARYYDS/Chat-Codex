@@ -1,0 +1,43 @@
+{
+  "name": "codex-bridge-chatgpt",
+  "version": "0.2.0",
+  "description": "Unofficial experimental bridge for visible ChatGPT web reasoning with local Codex verification.",
+  "author": {
+    "name": "wbs",
+    "url": "https://github.com/anightmonarch"
+  },
+  "homepage": "https://github.com/anightmonarch/codex-bridge-chatgpt#readme",
+  "repository": "https://github.com/anightmonarch/codex-bridge-chatgpt",
+  "license": "MIT",
+  "keywords": [
+    "codex",
+    "chatgpt",
+    "reasoning",
+    "browser",
+    "workflow"
+  ],
+  "skills": "./skills/",
+  "interface": {
+    "displayName": "Codex 桥接 ChatGPT",
+    "shortDescription": "Experimental ChatGPT web handoff with local verification.",
+    "longDescription": "An unofficial experimental reasoning handoff for Mac and Windows ChatGPT desktop users. After explicit risk consent, Codex minimizes repository evidence, sends one bounded packet through visible ChatGPT web controls, validates the untrusted result, and keeps all edits and tests local.",
+    "developerName": "wbs",
+    "category": "Developer Tools",
+    "capabilities": [
+      "Interactive",
+      "Read",
+      "Write"
+    ],
+    "websiteURL": "https://github.com/anightmonarch/codex-bridge-chatgpt",
+    "privacyPolicyURL": "https://github.com/anightmonarch/codex-bridge-chatgpt/blob/main/docs/privacy.md",
+    "defaultPrompt": [
+      "Use $codex-bridge-chatgpt to diagnose and fix this complex repository problem.",
+      "Use $codex-bridge-chatgpt to review this architecture decision.",
+      "Use $codex-bridge-chatgpt to find the root cause and verify the fix."
+    ],
+    "brandColor": "#10A37F",
+    "screenshots": [
+      "./assets/codex-bridge-chatgpt-architecture.png"
+    ]
+  }
+}

@@ -1,0 +1,40 @@
+{
+  "name": "codex-chatgpt-pro-plugin",
+  "version": "0.1.0",
+  "description": "Give Codex an intelligence lifeline - Codex skill for calling ChatGPT Pro. Computer use, repomix file attach, thread isolation per repo.",
+  "author": {
+    "name": "Haptica",
+    "email": "paul@haptica.ai",
+    "url": "https://github.com/pauljunsukhan"
+  },
+  "repository": "https://github.com/pauljunsukhan/codex-chatgpt-pro-plugin",
+  "license": "MIT",
+  "keywords": [
+    "codex",
+    "chatgpt",
+    "chatgpt-pro",
+    "browser-automation",
+    "planning",
+    "multi-agent"
+  ],
+  "skills": "./skills/",
+  "interface": {
+    "displayName": "ChatGPT Pro Line",
+    "shortDescription": "A persistent ChatGPT Pro planning line for Codex agents.",
+    "longDescription": "ChatGPT Pro Line gives Codex agents a repo-scoped, lock-safe way to ask a logged-in ChatGPT Pro browser session for higher-level architecture, planning, research synthesis, feature design, and debugging strategy while preserving receipts, transcripts, room bindings, and visible history artifacts.",
+    "developerName": "Haptica",
+    "category": "Developer Tools",
+    "capabilities": [
+      "Interactive",
+      "Read",
+      "Write"
+    ],
+    "defaultPrompt": [
+      "Ask ChatGPT Pro to review this architecture.",
+      "Bind this repo to a ChatGPT Pro room.",
+      "Export this room's visible ChatGPT history."
+    ],
+    "brandColor": "#111111",
+    "screenshots": []
+  }
+}

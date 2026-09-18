@@ -1,0 +1,16 @@
+{
+  "name": "codex-bridge-chatgpt",
+  "version": "0.2.0",
+  "private": true,
+  "type": "module",
+  "description": "Open-source Codex Skill and Plugin for verified ChatGPT reasoning handoffs.",
+  "license": "MIT",
+  "scripts": {
+    "test": "node --test",
+    "doctor": "node skills/codex-bridge-chatgpt/scripts/doctor.mjs --json",
+    "validate": "node scripts/verify.mjs"
+  },
+  "engines": {
+    "node": ">=18"
+  }
+}

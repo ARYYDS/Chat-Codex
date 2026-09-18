@@ -1,0 +1,13 @@
+[package]
+name = "chat-codex-studio"
+version = "2.5.0"
+description = "Chat-Codex Studio Native Desktop Client"
+edition = "2021"
+
+[dependencies]
+tauri = { version = "2", features = ["tray-icon"] }
+serde = { version = "1.0", features = ["derive"] }
+serde_json = "1.0"
+
+[build-dependencies]
+tauri-build = { version = "2", default-features = false }

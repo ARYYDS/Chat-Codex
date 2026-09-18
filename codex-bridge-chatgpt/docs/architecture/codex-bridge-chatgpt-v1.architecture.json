@@ -1,0 +1,162 @@
+{
+  "schema_version": 1,
+  "diagram_type": "architecture",
+  "meta": {
+    "title": "Codex 桥接 ChatGPT：V0.2 安全架构",
+    "locale": "zh-CN",
+    "quality_profile": "showcase",
+    "viewBox": [1380, 670],
+    "views": [
+      {
+        "id": "one-sentence",
+        "label": "一句话入口",
+        "focus": ["user", "skill", "doctor", "consent"],
+        "note": "首次调用先检查环境并说明非零账号风险；用户明确授权后才进入网页自动化。"
+      },
+      {
+        "id": "reasoning-loop",
+        "label": "推理闭环",
+        "focus": ["consent", "codex", "contract", "browser", "chatgpt", "adoption", "edit_test"],
+        "note": "每次只发送一个 Packet、激活一次发送并复制一次回答；任一状态不确定就停止。"
+      },
+      {
+        "id": "completion",
+        "label": "可验证完成",
+        "focus": ["edit_test", "receipt"],
+        "note": "只有本地测试、哈希绑定和 complete gate 全部通过，任务才算完成。"
+      }
+    ]
+  },
+  "components": [
+    {
+      "id": "user",
+      "type": "external",
+      "label": "用户",
+      "sublabel": "一句话点名 Skill",
+      "pos": [25, 285],
+      "size": [125, 68]
+    },
+    {
+      "id": "skill",
+      "type": "cloud",
+      "label": "Plugin + 桥接 Skill",
+      "sublabel": "安装外壳 + 唯一工作流",
+      "tag": "Mac / Windows",
+      "pos": [190, 285],
+      "size": [175, 68]
+    },
+    {
+      "id": "doctor",
+      "type": "security",
+      "label": "自动 Doctor",
+      "sublabel": "环境、Browser、登录、模型",
+      "tag": "fail closed",
+      "pos": [405, 285],
+      "size": [160, 68]
+    },
+    {
+      "id": "consent",
+      "type": "security",
+      "label": "风险授权闸门",
+      "sublabel": "非零账号风险 / 默认关闭",
+      "tag": "explicit consent",
+      "pos": [600, 285],
+      "size": [160, 68]
+    },
+    {
+      "id": "codex",
+      "type": "backend",
+      "label": "Codex / Luna",
+      "sublabel": "取证、压缩、调度",
+      "pos": [795, 285],
+      "size": [150, 68]
+    },
+    {
+      "id": "project",
+      "type": "database",
+      "label": "本地项目",
+      "sublabel": "规则、代码、测试、工作树",
+      "pos": [795, 80],
+      "size": [150, 68]
+    },
+    {
+      "id": "contract",
+      "type": "security",
+      "label": "契约与校验器",
+      "sublabel": "Packet / Result / SHA-256",
+      "pos": [985, 285],
+      "size": [165, 68]
+    },
+    {
+      "id": "browser",
+      "type": "frontend",
+      "label": "Codex 内置 Browser",
+      "sublabel": "复用桌面端登录会话",
+      "pos": [1185, 285],
+      "size": [175, 68]
+    },
+    {
+      "id": "chatgpt",
+      "type": "external",
+      "label": "ChatGPT 网页端",
+      "sublabel": "GPT-5.6 Sol 重推理",
+      "pos": [1185, 475],
+      "size": [175, 68]
+    },
+    {
+      "id": "adoption",
+      "type": "security",
+      "label": "本地采纳门",
+      "sublabel": "accepted / rejected / deferred",
+      "pos": [945, 475],
+      "size": [195, 68]
+    },
+    {
+      "id": "edit_test",
+      "type": "backend",
+      "label": "本地修改与测试",
+      "sublabel": "Codex 重建操作并验证",
+      "pos": [710, 475],
+      "size": [190, 68]
+    },
+    {
+      "id": "receipt",
+      "type": "database",
+      "label": "运行回执 + 完成闸门",
+      "sublabel": "证据、哈希、模型、测试状态",
+      "tag": "complete only",
+      "pos": [460, 475],
+      "size": [210, 68]
+    }
+  ],
+  "connections": [
+    {"id": "invoke", "from": "user", "to": "skill", "label": "一句话调用", "variant": "emphasis", "labelDy": -28},
+    {"id": "preflight", "from": "skill", "to": "doctor", "label": "首次自动预检", "variant": "security", "labelDy": -28},
+    {"id": "risk-decision", "from": "doctor", "to": "consent", "label": "风险说明 + 决策", "variant": "security", "labelDy": -28},
+    {"id": "ready", "from": "consent", "to": "codex", "label": "READY 后续跑", "variant": "security", "labelDy": -28},
+    {"id": "read-project", "from": "project", "to": "codex", "label": "最小证据", "fromSide": "bottom", "toSide": "top", "labelDy": 24},
+    {"id": "packet", "from": "codex", "to": "contract", "label": "1~3K Packet", "variant": "emphasis", "labelDy": -28},
+    {"id": "transport", "from": "contract", "to": "browser", "label": "校验 + 脱敏", "variant": "security", "labelDy": -28},
+    {"id": "reason", "from": "browser", "to": "chatgpt", "label": "已登录会话", "fromSide": "bottom", "toSide": "top", "variant": "emphasis", "labelDy": 24},
+    {"id": "structured-result", "from": "chatgpt", "to": "adoption", "label": "结构化 Result", "variant": "dashed", "labelDy": -28},
+    {"id": "accept", "from": "adoption", "to": "edit_test", "label": "仅采纳可验证项", "variant": "security", "labelDy": -28},
+    {"id": "evidence", "from": "edit_test", "to": "receipt", "label": "测试证据 + 哈希", "variant": "emphasis", "labelDy": -28}
+  ],
+  "cards": [
+    {
+      "dot": "cyan",
+      "title": "分发与使用",
+      "items": ["Plugin 负责安装发现，Skill 负责全部编排", "用户仍以一句话调用，首次只增加一次风险决策"]
+    },
+    {
+      "dot": "rose",
+      "title": "首次运行",
+      "items": ["Doctor 检查安装；风险授权未就绪时不触碰 ChatGPT", "缺失、拒绝或过期均失败关闭，不静默启用"]
+    },
+    {
+      "dot": "emerald",
+      "title": "职责与完成",
+      "items": ["一次发送、一次可见复制；不做 DOM 回答提取和自动重试", "ChatGPT 只提方案，Codex 负责验证、执行和 complete gate"]
+    }
+  ]
+}

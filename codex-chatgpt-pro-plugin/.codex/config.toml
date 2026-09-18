@@ -1,0 +1,16 @@
+# Project-scoped MCP server for the dedicated ChatGPT Pro browser profile.
+# Run `npm install` once, then `npm run chrome` before using the tools.
+# This config is loaded by new Codex sessions; the current session will not hot-load it.
+
+[mcp_servers.chrome_devtools]
+command = "./node_modules/.bin/chrome-devtools-mcp"
+args = [
+  "--browser-url=http://127.0.0.1:9222",
+  "--experimental-page-id-routing",
+  "--usage-statistics=false",
+  "--performance-crux=false"
+]
+cwd = "."
+startup_timeout_sec = 20
+tool_timeout_sec = 120
+enabled = true

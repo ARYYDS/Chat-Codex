@@ -1,0 +1,19 @@
+{
+  "codeRoot": "C:/code/Chat-Codex/handoff-core",
+  "runtimeRoot": "C:/GPT-Chat-codex-handoff",
+  "historyRoot": "C:/GPT-Chat-codex-handoff/PassSearchHistory",
+  "runsRoot": "C:/GPT-Chat-codex-handoff/runs",
+  "workersRoot": "C:/GPT-Chat-codex-handoff/workers",
+  "masterProfile": "C:/GPT-Chat-codex-handoff/master-seed-profile",
+  "projectPath": "C:/code/Chat-Codex/handoff-core",
+  "archiveProjectId": "GPT-Chat-codex-handoff",
+  "projectAliases": [
+    "C:/code/Chat-Codex"
+  ],
+  "cdpPorts": [
+    9225,
+    9222,
+    9223
+  ],
+  "chromePath": "C:/Program Files/Google/Chrome/Application/chrome.exe"
+}
